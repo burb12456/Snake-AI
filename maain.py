@@ -11,12 +11,12 @@ WIDTH, HEIGHT = 750, 750
 GRID_SIZE = 40
 GRID_WIDTH = WIDTH // GRID_SIZE
 GRID_HEIGHT = HEIGHT // GRID_SIZE
-WHITE = (0, 255, 0)
+BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 0, 255)
 DARK_GREEN = (0, 50, 255)
 SNAKE_SPEED = 2  # Adjust this as needed
-CHEEDAR = 5
+CHEEDAR = 0
 SCORE = 0
 
 # Initialize the screen
@@ -169,7 +169,7 @@ while True:
         sys.exit()
 
     # Clear the screen
-    screen.fill(WHITE)
+    screen.fill(BLACK)
 
     # Draw the snake and food
     snake.draw()
