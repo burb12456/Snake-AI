@@ -7,15 +7,15 @@ import heapq
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 750, 750
-GRID_SIZE = 40
+WIDTH, HEIGHT = 1000, 1000
+GRID_SIZE = 25
 GRID_WIDTH = WIDTH // GRID_SIZE
 GRID_HEIGHT = HEIGHT // GRID_SIZE
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 0, 255)
 DARK_GREEN = (0, 50, 255)
-SNAKE_SPEED = 2  # Adjust this as needed
+SNAKE_SPEED = 4  # Adjust this as needed
 CHEEDAR = 0
 SCORE = 0
 
@@ -32,6 +32,16 @@ class Snake:
 
     def move(self):
         new_head = (self.body[0][0] + self.direction[0], self.body[0][1] + self.direction[1])
+
+        # Check if the snake hits the wall, and adjust the direction to prevent that
+        if new_head[0] < 0:
+            new_head = (GRID_WIDTH - 1, new_head[1])
+        elif new_head[0] >= GRID_WIDTH:
+            new_head = (0, new_head[1])
+        elif new_head[1] < 0:
+            new_head = (new_head[0], GRID_HEIGHT - 1)
+        elif new_head[1] >= GRID_HEIGHT:
+            new_head = (new_head[0], 0)
 
         if new_head == food.position:
             self.grow = True
@@ -74,16 +84,26 @@ class Food:
     def __init__(self):
         self.position = (random.randint(0, GRID_WIDTH - 1), random.randint(0, GRID_HEIGHT - 1))
 
-    def respawn(self):
-        self.position = (random.randint(0, GRID_WIDTH - 1), random.randint(0, GRID_HEIGHT - 1))
+    def respawn(self, snake_body):
+        while True:
+            new_position = (random.randint(0, GRID_WIDTH - 1), random.randint(0, GRID_HEIGHT - 1))
+            if new_position not in snake_body:
+                self.position = new_position
+                break
 
     def draw(self):
         pygame.draw.rect(screen, RED, (self.position[0] * GRID_SIZE, self.position[1] * GRID_SIZE, GRID_SIZE, GRID_SIZE))
-def heuristic(a, b):
-    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+def heuristic(a, b, snake_body):
+    h = abs(a[0] - b[0]) + abs(a[1] - b[1])
+    neighbors = [(a[0] + 1, a[1]), (a[0] - 1, a[1]), (a[0], a[1] + 1), (a[0], a[1] - 1)]
+    if any(neighbor in snake_body for neighbor in neighbors):
+        h += 10
+    return h
+
+# A* Pathfinding
 # A* Pathfinding
 def find_path(snake, food):
-    # Create a graph representing the game grid
     graph = [[0 for _ in range(GRID_WIDTH)] for _ in range(GRID_HEIGHT)]
 
     # Mark the snake's body as obstacles
@@ -107,13 +127,12 @@ def find_path(snake, food):
             while current_node in came_from:
                 path.append(current_node)
                 current_node = came_from[current_node]
-            path.reverse()  # Reverse the path to follow from head to tail
+            path.reverse()
 
             if snake.grow:
-                snake.grow = False  # Reset the grow flag
-                return  # The snake will continue moving in the same direction
+                snake.grow = False
+                return
 
-            # Set the snake's direction based on the next step in the path
             next_step = path[0]
             snake.direction = tuple(map(lambda x, y: x - y, next_step, snake.body[0]))
             return
@@ -131,13 +150,57 @@ def find_path(snake, food):
                 and neighbor not in closed_set
             ):
                 tentative_cost = current_cost + 1
+                tentative_heuristic = heuristic(neighbor, goal, snake.body)
+                total_cost = tentative_cost + tentative_heuristic
                 if (
-                    (tentative_cost, neighbor) not in open_set
+                    (total_cost, neighbor) not in open_set
                     or tentative_cost < graph[neighbor[1]][neighbor[0]]
                 ):
                     came_from[neighbor] = current_node
                     graph[neighbor[1]][neighbor[0]] = tentative_cost
-                    heapq.heappush(open_set, (tentative_cost + heuristic(neighbor, goal), neighbor))
+                    heapq.heappush(open_set, (total_cost, neighbor))
+
+
+    while open_set:
+        current_cost, current_node = heapq.heappop(open_set)
+
+        if current_node == goal:
+            path = []
+            while current_node in came_from:
+                path.append(current_node)
+                current_node = came_from[current_node]
+            path.reverse()
+
+            if snake.grow:
+                snake.grow = False
+                return
+
+            next_step = path[0]
+            snake.direction = tuple(map(lambda x, y: x - y, next_step, snake.body[0]))
+            return
+
+        closed_set.add(current_node)
+
+        for neighbor in [(current_node[0] + 1, current_node[1]),
+                        (current_node[0] - 1, current_node[1]),
+                        (current_node[0], current_node[1] + 1),
+                        (current_node[0], current_node[1] - 1)]:
+            if (
+                0 <= neighbor[0] < GRID_WIDTH
+                and 0 <= neighbor[1] < GRID_HEIGHT
+                and graph[neighbor[1]][neighbor[0]] != -1
+                and neighbor not in closed_set
+            ):
+                tentative_cost = current_cost + 1
+                tentative_heuristic = heuristic(neighbor, goal, snake.body)
+                total_cost = tentative_cost + tentative_heuristic
+                if (
+                    (total_cost, neighbor) not in open_set
+                    or tentative_cost < graph[neighbor[1]][neighbor[0]]
+                ):
+                    came_from[neighbor] = current_node
+                    graph[neighbor[1]][neighbor[0]] = tentative_cost
+                    heapq.heappush(open_set, (total_cost, neighbor))
 
 # Initialize Snake and Food
 snake = Snake()
@@ -161,7 +224,7 @@ while True:
     if snake.body[0] == food.position:
         snake.grow = True
         SCORE += 1
-        food.respawn()
+        food.respawn(snake.body)
 
     # Check for collision with walls or itself
     if snake.check_collision():
@@ -179,7 +242,7 @@ while True:
     pygame.display.flip()
 
     # Control the game speed
-    clock.tick(10)  # 60 frames per second
+    clock.tick(60)  # 60 frames per second
     frame_count += 1
     print("Game loop running")
     print("Score:", SCORE)
