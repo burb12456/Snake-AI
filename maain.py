@@ -7,8 +7,8 @@ import heapq
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 1000, 1000
-GRID_SIZE = 25
+WIDTH, HEIGHT = 900, 900
+GRID_SIZE = 100
 GRID_WIDTH = WIDTH // GRID_SIZE
 GRID_HEIGHT = HEIGHT // GRID_SIZE
 BLACK = (0, 0, 0)
@@ -242,7 +242,7 @@ while True:
     pygame.display.flip()
 
     # Control the game speed
-    clock.tick(60)  # 60 frames per second
+    clock.tick(120)  # 60 frames per second
     frame_count += 1
     print("Game loop running")
     print("Score:", SCORE)
