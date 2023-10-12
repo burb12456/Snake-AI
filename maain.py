@@ -7,8 +7,8 @@ import heapq
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 120, 120
-GRID_SIZE = 40
+WIDTH, HEIGHT = 420, 420
+GRID_SIZE = 20
 GRID_WIDTH = WIDTH // GRID_SIZE
 GRID_HEIGHT = HEIGHT // GRID_SIZE
 BLACK = (0, 0, 0)
