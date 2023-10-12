@@ -7,15 +7,15 @@ import heapq
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 900, 900
-GRID_SIZE = 50
+WIDTH, HEIGHT = 120, 120
+GRID_SIZE = 40
 GRID_WIDTH = WIDTH // GRID_SIZE
 GRID_HEIGHT = HEIGHT // GRID_SIZE
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 0, 255)
 DARK_GREEN = (0, 50, 255)
-SNAKE_SPEED = 5  # Adjust this as needed
+SNAKE_SPEED = 1
 CHEEDAR = 0
 SCORE = 0
 
@@ -239,7 +239,7 @@ while True:
     pygame.display.flip()
 
     # Control the game speed
-    clock.tick(180)  # 60 frames per second
+    clock.tick(120)  # 60 frames per second
     frame_count += 1
-    print("Game loop running")
+#    print("Game loop running")
     print("Score:", SCORE)
