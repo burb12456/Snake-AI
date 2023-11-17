@@ -186,7 +186,7 @@ pygame.display.set_caption("Snake AI")
 clock = pygame.time.Clock()
 
 def game_loop():
-    global frame_count, temp_count, SCORE, tempScore, population
+    global frame_count, temp_count, SCORE, tempScore, population, food_colouring
 
     frame_count = 0
     snake = Snake()  # Create an instance of the Snake class
